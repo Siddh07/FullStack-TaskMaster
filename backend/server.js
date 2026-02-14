@@ -1,23 +1,40 @@
-const express = require("express"); // importing express
-
-const dotenv = require("dotenv");
+const express = require("express");
+const dotenv = require("dotenv"); // Import first
 const cors = require("cors");
 
-dotenv.config(); //loading env file  so that we can use the variables defined in it
+dotenv.config({ path: "../.env" });
+const pool = require("./src/config/db.js"); // Correct path
 
-const app = express(); // we call the express function independtly for app
+const app = express();
 
-app.use(cors()); // allow frontend to talk backend
-app.use(express.json()); // parse JSON from client into JavaScript object
-app.use(express.urlencoded({ extended: true })); // allow us to send data in url
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.json({ message: "server is running!" });
 });
 
-const PORT = process.env.PORT || 5000; // here we set the default port number
+// Routes BEFORE app.listen()
+app.get("/api/test-db", async (req, res) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+    res.json({
+      success: true,
+      message: "Database connection successful",
+      timestamp: result.rows[0].now,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "Database connection failed",
+      error: err.message,
+    });
+  }
+});
 
+// app.listen() LAST
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  //start the server on port 5000
   console.log(`server is running on port ${PORT}`);
 });
