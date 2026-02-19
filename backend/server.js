@@ -2,6 +2,8 @@ const express = require("express");
 const dotenv = require("dotenv"); // Import first
 const cors = require("cors");
 
+const authRoutes = require("./src/routes/authRoutes");
+
 dotenv.config({ path: "../.env" });
 const pool = require("./src/config/db.js"); // Correct path
 
@@ -33,7 +35,8 @@ app.get("/api/test-db", async (req, res) => {
   }
 });
 
-// app.listen() LAST
+app.use("/api/auth", authRoutes);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);
