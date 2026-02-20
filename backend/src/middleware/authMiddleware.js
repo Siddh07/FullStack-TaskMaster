@@ -4,7 +4,6 @@ const { verifyToken } = require('../utils/jwt');
 const auth = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization; 
-    // Expect: "Authorization: Bearer <token>"
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return res.status(401).json({ message: 'Authorization token is required' });
