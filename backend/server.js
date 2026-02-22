@@ -7,6 +7,7 @@ dotenv.config(); // <-- IMPORTANT: no { path: ... }
 
 // 2) Then import anything that uses process.env
 const authRoutes = require("./src/routes/authRoutes");
+const taskRoutes = require("./src/routes/taskRoutes");
 const pool = require("./src/config/db.js");
 
 const app = express();
@@ -38,6 +39,7 @@ app.get("/api/test-db", async (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/tasks", taskRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
