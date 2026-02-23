@@ -1,131 +1,104 @@
 const Task = require("../models/Task");
 
-// GET /api/tasks
-const getTasks = async (req, res) => {
+const getTasks = async (req, res, next) => {
   try {
-    // req.user comes from auth middleware
-    const userId = req.user.id;
+    const fetchId = req.user.id;
 
-    // Optional filters from query params
-    // Example: /api/tasks?status=todo&priority=high
-    const filters = {
+    const assign_filter = {
       status: req.query.status,
       priority: req.query.priority,
-      project_id: req.query.project_id,
     };
 
-    const tasks = await Task.findAllByUser(userId, filters);
+    const tasks = await Task.findAllByUser(fetchId, assign_filter);
 
-    return res.json({
-      count: tasks.length,
-      tasks,
+    res.status(200).json({
+      success: true,
+      message: "Tasks fetched successfully",
+      data: tasks,
     });
   } catch (error) {
-    console.error("GetTasks error:", error);
-    return res.status(500).json({
-      message: "Server error fetching tasks",
-    });
+    next(error);
   }
 };
 
-// POST /api/tasks
-const createTask = async (req, res) => {
+const createTask = async (req, res, next) => {
   try {
-    const userId = req.user.id;
-    const { title, description, status, priority, due_date, project_id } =
-      req.body;
+    // req.body → the JSON body the user sent in the POST request
+    // e.g. { "title": "Buy milk", "priority": "low" }
+    const { title, description, status, priority, due_date } = req.body;
 
-    // Validate required field
+    // title is required — reject immediately if missing
     if (!title) {
-      return res.status(400).json({
-        message: "Title is required",
-      });
+      return res.status(400).json({ message: "Title is required" });
     }
 
-    const task = await Task.create({
-      user_id: userId,
+    // Build the taskData object to pass to the model
+    const taskData = {
+      user_id: req.user.id, // always taken from JWT, never from body (security!)
       title,
       description,
       status,
       priority,
       due_date,
-      project_id,
-    });
+    };
 
-    return res.status(201).json({ task });
+    const task = await Task.create(taskData);
+
+    // 201 = "Created" — the correct status for a new resource
+    res.status(201).json({ task });
   } catch (error) {
-    console.error("CreateTask error:", error);
-    return res.status(500).json({
-      message: "Server error creating task",
-    });
+    next(error);
   }
 };
 
-// PUT /api/tasks/:id
-const updateTask = async (req, res) => {
+const updateTask = async (req, res, next) => {
   try {
-    const userId = req.user.id;
+    // req.params.id → the :id part from the URL
+    // e.g. PUT /api/tasks/7  →  req.params.id = "7"
     const taskId = req.params.id;
 
-    // First check task exists
-    const existingTask = await Task.findById(taskId);
-
-    if (!existingTask) {
-      return res.status(404).json({
-        message: "Task not found",
-      });
+    // First check: does this task even exist?
+    const existing = await Task.findById(taskId);
+    if (!existing) {
+      return res.status(404).json({ message: "Task not found" });
     }
 
-    // Check task belongs to this user
-    if (existingTask.user_id !== userId) {
-      return res.status(403).json({
-        message: "Not authorized to update this task",
-      });
+    // Second check: does this task BELONG to the logged-in user?
+    // This prevents user A from editing user B's tasks (IDOR attack)
+    if (existing.user_id !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
     }
 
-    const updatedTask = await Task.update(taskId, req.body);
+    // Pass only what the user sent — COALESCE keeps the rest unchanged
+    const taskData = req.body;
 
-    return res.json({ task: updatedTask });
+    const updatedTask = await Task.update(taskId, taskData);
+
+    res.status(200).json({ task: updatedTask });
   } catch (error) {
-    console.error("UpdateTask error:", error);
-    return res.status(500).json({
-      message: "Server error updating task",
-    });
+    next(error);
   }
 };
 
-// DELETE /api/tasks/:id
-const deleteTask = async (req, res) => {
+const deleteTask = async (req, res, next) => {
   try {
-    const userId = req.user.id;
     const taskId = req.params.id;
 
-    // Check task exists
-    const existingTask = await Task.findById(taskId);
-
-    if (!existingTask) {
-      return res.status(404).json({
-        message: "Task not found",
-      });
+    // Same ownership check as update
+    const existing = await Task.findById(taskId);
+    if (!existing) {
+      return res.status(404).json({ message: "Task not found" });
     }
 
-    // Check task belongs to this user
-    if (existingTask.user_id !== userId) {
-      return res.status(403).json({
-        message: "Not authorized to delete this task",
-      });
+    if (existing.user_id !== req.user.id) {
+      return res.status(403).json({ message: "Not authorized" });
     }
 
     await Task.delete(taskId);
 
-    return res.json({
-      message: "Task deleted successfully",
-    });
+    res.status(200).json({ message: "Task deleted successfully" });
   } catch (error) {
-    console.error("DeleteTask error:", error);
-    return res.status(500).json({
-      message: "Server error deleting task",
-    });
+    next(error);
   }
 };
 

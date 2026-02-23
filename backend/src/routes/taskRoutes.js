@@ -1,20 +1,18 @@
 const express = require("express");
+
+const router = express.Router();
+
+const auth = require("../middleware/authMiddleware");
 const {
   getTasks,
   createTask,
   updateTask,
   deleteTask,
 } = require("../controllers/taskController");
-const auth = require("../middleware/authMiddleware");
 
-const router = express.Router();
-
-// ALL routes protected with auth middleware
-router.use(auth);
-
-router.get("/", getTasks);
-router.post("/", createTask);
-router.put("/:id", updateTask);
-router.delete("/:id", deleteTask);
+router.get("/", auth, getTasks);
+router.post("/", auth, createTask);
+router.put("/:id", auth, updateTask);
+router.delete("/:id", auth, deleteTask);
 
 module.exports = router;

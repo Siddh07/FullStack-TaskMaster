@@ -7,8 +7,8 @@ dotenv.config(); // <-- IMPORTANT: no { path: ... }
 
 // 2) Then import anything that uses process.env
 const authRoutes = require("./src/routes/authRoutes");
-const taskRoutes = require("./src/routes/taskRoutes");
 const pool = require("./src/config/db.js");
+const taskRoutes = require("./src/routes/taskRoutes");
 
 const app = express();
 
