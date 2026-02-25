@@ -9,6 +9,7 @@ dotenv.config(); // <-- IMPORTANT: no { path: ... }
 const authRoutes = require("./src/routes/authRoutes");
 const pool = require("./src/config/db.js");
 const taskRoutes = require("./src/routes/taskRoutes");
+const projectRoutes = require("./src/routes/projectRoutes");
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.get("/api/test-db", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/projects", projectRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
