@@ -75,7 +75,7 @@ const updateProject = async (req, res, next) => {
 // DELETE project
 const deleteProject = async (req, res, next) => {
   try {
-    const projectId = req.params.id; // ← which project to delete
+    const projectId = req.params.id; 
 
     const existing = await Project.findById(projectId);
     if (!existing) {

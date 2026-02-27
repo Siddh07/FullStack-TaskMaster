@@ -1,4 +1,23 @@
 const Task = require("../models/Task");
+const pool = require("../config/db.js");
+
+const getTaskSummary = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    const query = `
+      SELECT status, COUNT(*) as count
+      FROM tasks
+      WHERE user_id = $1
+      GROUP BY status
+    `;
+
+    const result = await pool.query(query, [userId]);
+    res.status(200).json({ summary: result.rows });
+  } catch (error) {
+    next(error);
+  }
+};
 
 const getTasks = async (req, res, next) => {
   try {
@@ -107,4 +126,5 @@ module.exports = {
   createTask,
   updateTask,
   deleteTask,
+  getTaskSummary,
 };
