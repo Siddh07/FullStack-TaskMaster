@@ -24,5 +24,4 @@ pool.on("error", (err) => {
   process.exit(-1); //exit in case of error
 });
 
-console.log("Database connected", process.env.DB_PASSWORD);
 module.exports = pool;

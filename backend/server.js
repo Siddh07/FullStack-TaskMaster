@@ -2,10 +2,8 @@ const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 
-// 1) Load .env from backend/.env
-dotenv.config(); // <-- IMPORTANT: no { path: ... }
+dotenv.config();
 
-// 2) Then import anything that uses process.env
 const authRoutes = require("./src/routes/authRoutes");
 const pool = require("./src/config/db.js");
 const taskRoutes = require("./src/routes/taskRoutes");

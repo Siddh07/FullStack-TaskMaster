@@ -49,7 +49,10 @@ const register = async (req, res) => {
     console.log("Register error:", err);
     return res
       .status(500)
-      .json({ message: "Server error during registration" });
+      .json({
+        message: "Server error during registration",
+        error: err.message,
+      });
   }
 };
 
