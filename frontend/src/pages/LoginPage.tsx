@@ -25,6 +25,8 @@ export default function LoginPage() {
       });
 
       if (response.status === 200) {
+        localStorage.setItem("token", response.data.token);
+
         navigate("/dashboard");
       } else {
         setError("Wrong Email OR Password");
