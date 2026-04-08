@@ -1,104 +1,97 @@
 import { useState } from "react";
 import type { FormEvent, ChangeEvent } from "react";
-import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-
-const API_BASE = "https://fullstack-taskmaster.onrender.com/api";
+import { api } from "../lib/api";
 
 export default function RegisterPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [name, setName]         = useState("");
+  const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setLoading(true);
 
     try {
-      setError(null);
+      const data = await api("register", { name, email, password });
 
-      const response = await axios.post(`${API_BASE}/auth/register`, {
-        name,
-        email,
-        password,
-      });
-
-      if (response.status === 201) {
-        navigate("/login");
-      } else {
-        setError("Registration failed");
+      if (!data.success) {
+        setError((data.message as string) || "Registration failed.");
+        return;
       }
-    } catch (err: unknown) {
-      const axiosErr = err as { response?: { data?: { message?: string } } };
-      setError(axiosErr.response?.data?.message || "Registration failed");
+
+      navigate("/login");
+    } catch {
+      setError("Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-md mx-auto mt-8 p-6 border rounded-lg">
-      <h1 className="text-2xl font-bold mb-6">Register</h1>
+    <div className="auth-page">
+      <div className="auth-card">
+        <div className="auth-brand">TaskMaster</div>
+        <h1 className="auth-title">Create account</h1>
+        <p className="auth-sub">Get started — it takes 30 seconds.</p>
 
-      {error && ( //when error is true, the div will be displayed and the error message will be displayed
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
+        {error && <div className="auth-error">{error}</div>}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+        <form onSubmit={handleSubmit} className="auth-form">
+          <label className="field-label" htmlFor="reg-name">Full name</label>
           <input
+            id="reg-name"
             type="text"
             value={name}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setName(e.target.value)
-            }
-            placeholder="Full Name"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+            className="field-input"
+            placeholder="Jane Smith"
             required
+            autoFocus
           />
-        </div>
 
-        <div>
+          <label className="field-label" htmlFor="reg-email">Email</label>
           <input
+            id="reg-email"
             type="email"
             value={email}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setEmail(e.target.value)
-            }
-            placeholder="Email"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+            className="field-input"
+            placeholder="you@example.com"
             required
           />
-        </div>
 
-        <div>
+          <label className="field-label" htmlFor="reg-password">Password</label>
           <input
+            id="reg-password"
             type="password"
             value={password}
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setPassword(e.target.value)
-            }
-            placeholder="Password"
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+            className="field-input"
+            placeholder="••••••••"
             required
+            minLength={6}
           />
-        </div>
 
-        <button
-          type="submit"
-          className="w-full bg-blue-600 text-white p-3 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Create Account
-        </button>
-      </form>
+          <button
+            id="reg-submit"
+            type="submit"
+            disabled={loading}
+            className="btn btn-primary btn-full"
+          >
+            {loading ? "Creating account..." : "Create account"}
+          </button>
+        </form>
 
-      <p className="mt-4 text-center text-gray-600">
-        Already have an account?{" "}
-        <Link to="/login" className="text-blue-600 hover:underline">
-          Login
-        </Link>
-      </p>
+        <p className="auth-footer">
+          Already have an account?{" "}
+          <Link to="/login" className="auth-link">Sign in</Link>
+        </p>
+      </div>
     </div>
   );
 }
