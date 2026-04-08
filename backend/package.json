@@ -13,7 +13,7 @@
     "nodejs",
     "express"
   ],
-  "author": "Your Name",
+  "author": "Siddhu",
   "license": "MIT",
   "dependencies": {
     "bcrypt": "^5.1.1",

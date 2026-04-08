@@ -47,12 +47,10 @@ const register = async (req, res) => {
     });
   } catch (err) {
     console.log("Register error:", err);
-    return res
-      .status(500)
-      .json({
-        message: "Server error during registration",
-        error: err.message,
-      });
+    return res.status(500).json({
+      message: "Server error during registration",
+      error: err.message,
+    });
   }
 };
 
@@ -107,8 +105,23 @@ const getMe = async (req, res) => {
       });
     }
 
+    const user = await pool.query("SELECT * FROM users WHERE id = $1", [
+      req.user.userId,
+    ]);
+
+    const tasks = await pool.query("SELECT * FROM tasks WHERE user_id = $1", [
+      req.user.userId,
+    ]);
+
+    const projects = await pool.query(
+      "SELECT * FROM projects WHERE user_id = $1",
+      [req.user.userId],
+    );
+
     return res.json({
-      user: req.user,
+      user: user.rows[0],
+      tasks: tasks.rows,
+      projects: projects.rows, // here we mention the data we want of the user in the dahboard andn exoprt it to dis-plpayy ion the dashboard.tsx
     });
   } catch (error) {
     console.error("GetMe error:", error);
